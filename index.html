@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚖ Юридическая практика — 3 уровня</title>
+<style>
+  :root {
+    --beige: #f5e6d3;
+    --beige-dark: #e8d5bc;
+    --lavender: #d8c8e8;
+    --mint: #c8e6d0;
+    --peach: #f5d4c0;
+    --sky: #c8dcf0;
+    --gold: #d4a855;
+    --text: #4a3f35;
+    --accent: #b8956a;
+    --correct: #7cb87c;
+    --wrong: #d4878f;
+    --law: #8a9bae;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(135deg, #f5e6d3 0%, #e8d5bc 50%, #d8c8e8 100%);
+    min-height: 100vh;
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .game-container {
+    max-width: 820px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(120, 100, 80, 0.25);
+    padding: 32px;
+    border: 2px solid rgba(184, 149, 106, 0.3);
+    backdrop-filter: blur(10px);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #8a7a68;
+    font-style: italic;
+    margin-bottom: 28px;
+    font-size: 15px;
+  }
+
+  .screen { display: none; animation: fadeIn 0.4s ease; }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== КАРТОЧКА ЮРИСТА (постоянная) ===== */
+  .lawyer-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, rgba(255,253,249,0.95), rgba(245,230,211,0.9));
+    border-radius: 16px;
+    border: 1px solid var(--beige-dark);
+    margin-bottom: 18px;
+    box-shadow: 0 4px 12px rgba(120, 100, 80, 0.08);
+  }
+
+  .lawyer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: var(--beige-dark);
+    flex-shrink: 0;
+    border: 2px solid var(--accent);
+  }
+
+  .lawyer-info { flex: 1; min-width: 0; }
+
+  .lawyer-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lawyer-meta {
+    font-size: 12px;
+    color: #8a7a68;
+    margin-top: 2px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .lawyer-spec {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--text);
+  }
+
+  .lawyer-level-badge {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--accent);
+  }
+
+  .input-group { margin: 20px 0; }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--beige-dark);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #fffdf9;
+    color: var(--text);
+    transition: border 0.3s;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .spec-card {
+    padding: 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    position: relative;
+  }
+
+  .spec-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(120, 100, 80, 0.2);
+  }
+
+  .spec-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(184, 149, 106, 0.2);
+  }
+
+  .spec-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .spec-card p { font-size: 13px; line-height: 1.4; opacity: 0.85; margin-bottom: 8px; }
+
+  .spec-bonus {
+    font-size: 12px;
+    font-weight: bold;
+    color: #7a6a55;
+    background: rgba(255,255,255,0.6);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  .spec-criminal { background: var(--peach); }
+  .spec-civil    { background: var(--sky); }
+  .spec-family   { background: #f5e0d0; }
+  .spec-corp     { background: var(--mint); }
+
+  .btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--accent);
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: #a07f56;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(120, 100, 80, 0.3);
+  }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-block { width: 100%; margin-top: 10px; }
+
+  .hud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--beige);
+    border-radius: 14px;
+    border: 1px solid var(--beige-dark);
+  }
+
+  .hud-item { flex: 1; min-width: 90px; text-align: center; }
+  .hud-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a7a68;
+    margin-bottom: 4px;
+  }
+  .hud-value { font-size: 18px; font-weight: bold; color: var(--text); }
+
+  .skills-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .skill-badge {
+    flex: 1;
+    min-width: 90px;
+    text-align: center;
+    padding: 10px;
+    background: #fffdf9;
+    border-radius: 10px;
+    border: 1px solid var(--beige-dark);
+    font-size: 13px;
+  }
+
+  .skill-badge .num { font-size: 18px; font-weight: bold; color: var(--accent); }
+
+  .case-box {
+    background: #fffdf9;
+    border-radius: 16px;
+    padding: 24px;
+    border-left: 6px solid var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .case-number {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  .case-text {
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    padding: 16px 18px;
+    background: var(--beige);
+    border: 2px solid var(--beige-dark);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text);
+  }
+
+  .option:hover:not(:disabled) {
+    background: var(--beige-dark);
+    transform: translateX(4px);
+  }
+
+  .option:disabled { cursor: default; }
+  .option.correct { background: var(--correct) !important; color: #fff; border-color: #5a9a5a; }
+  .option.wrong { background: var(--wrong) !important; color: #fff; border-color: #b56870; }
+
+  .result-box {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 12px;
+    display: none;
+  }
+  .result-box.show { display: block; animation: fadeIn 0.3s; }
+  .result-box.success { background: rgba(124, 184, 124, 0.18); border: 2px solid var(--correct); }
+  .result-box.fail { background: rgba(212, 135, 143, 0.18); border: 2px solid var(--wrong); }
+
+  .result-title { font-weight: bold; margin-bottom: 6px; font-size: 16px; }
+  .result-explain { font-size: 14px; line-height: 1.5; opacity: 0.9; }
+
+  .law-ref {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(138, 155, 174, 0.12);
+    border-left: 4px solid var(--law);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #5a6a7a;
+  }
+  .law-ref strong { color: var(--law); }
+
+  .progress { height: 8px; background: var(--beige-dark); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+
+  .final-score {
+    text-align: center;
+    padding: 30px;
+    background: var(--beige);
+    border-radius: 16px;
+    margin: 20px 0;
+  }
+  .final-score .big { font-size: 42px; font-weight: bold; color: var(--accent); }
+  .final-score .label { font-size: 14px; color: #8a7a68; text-transform: uppercase; letter-spacing: 1px; }
+  .medal { font-size: 64px; margin: 10px 0; }
+
+  .level-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .level-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    background: var(--beige-dark);
+    color: #8a7a68;
+    transition: all 0.3s;
+  }
+  .level-dot.active { background: var(--accent); color: #fff; transform: scale(1.15); box-shadow: 0 0 0 3px rgba(184,149,106,0.3); }
+  .level-dot.done { background: var(--correct); color: #fff; }
+
+  .spec-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .spec-grid { grid-template-columns: 1fr; }
+    .game-container { padding: 20px; }
+    h1 { font-size: 22px; }
+    .lawyer-name { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <h1>⚖ Юридическая практика</h1>
+  <div class="subtitle">3 уровня · 30 дел · Реальные законы РФ</div>
+
+  <!-- ===== SCREEN: START / LEVEL SELECT ===== -->
+  <div id="screen-start" class="screen active">
+    <div id="level-banner" style="text-align:center; margin-bottom:16px;"></div>
+
+    <div class="input-group" id="name-group">
+      <label for="lawyer-name">Как зовут вашего юриста?</label>
+      <input type="text" id="lawyer-name" placeholder="Например: Александр Петров" maxlength="30">
+    </div>
+
+    <div class="input-group">
+      <label id="spec-label">Выберите специализацию для этого уровня:</label>
+      <div class="spec-grid" id="spec-grid">
+        <div class="spec-card spec-criminal" data-spec="criminal">
+          <h3>🔒 Уголовное право</h3>
+          <p>Защита обвиняемых, тяжкие дела. Высокие гонорары, высокий риск.</p>
+          <span class="spec-bonus">Логика +2, Красноречие +1</span>
+        </div>
+        <div class="spec-card spec-civil" data-spec="civil">
+          <h3>📜 Гражданское право</h3>
+          <p>Споры, договоры, имущество. Стабильные дела и хорошие гонорары.</p>
+          <span class="spec-bonus">Логика +1, Эмпатия +2</span>
+        </div>
+        <div class="spec-card spec-family" data-spec="family">
+          <h3>💗 Семейное право</h3>
+          <p>Разводы, опека, алименты. Тонкая работа с людьми и эмоциями.</p>
+          <span class="spec-bonus">Эмпатия +3, Красноречие +1</span>
+        </div>
+        <div class="spec-card spec-corp" data-spec="corp">
+          <h3>🏢 Корпоративное право</h3>
+          <p>Бизнес-споры, контракты, слияния. Огромные гонорары, сложные схемы.</p>
+          <span class="spec-bonus">Логика +3, Красноречие +1</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-block" id="btn-start" disabled>Начать уровень →</button>
+  </div>
+
+  <!-- ===== SCREEN: GAME ===== -->
+  <div id="screen-game" class="screen">
+    <!-- Постоянная карточка юриста -->
+    <div class="lawyer-card">
+      <div class="lawyer-avatar">⚖</div>
+      <div class="lawyer-info">
+        <div class="lawyer-name" id="game-lawyer-name">—</div>
+        <div class="lawyer-meta">
+          <span class="lawyer-spec" id="game-lawyer-spec">—</span>
+          <span class="lawyer-level-badge" id="game-lawyer-level">Ур. 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-indicator" id="level-indicator">
+      <div class="level-dot" data-level="1">1</div>
+      <div class="level-dot" data-level="2">2</div>
+      <div class="level-dot" data-level="3">3</div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-item">
+        <div class="hud-label">Гонорар</div>
+        <div class="hud-value" id="hud-money">0 ₽</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Опыт</div>
+        <div class="hud-value" id="hud-exp">0</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Уровень</div>
+        <div class="hud-value" id="hud-level">1</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Дело</div>
+        <div class="hud-value" id="hud-case">1 / 10</div>
+      </div>
+    </div>
+
+    <div class="skills-row">
+      <div class="skill-badge">🧠 Логика <div class="num" id="skill-logic">1</div></div>
+      <div class="skill-badge">🗣 Красноречие <div class="num" id="skill-rhetoric">1</div></div>
+      <div class="skill-badge">💗 Эмпатия <div class="num" id="skill-empathy">1</div></div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div style="text-align:center;">
+      <span class="spec-badge" id="current-spec-badge"></span>
+    </div>
+
+    <div class="case-box">
+      <div class="case-number" id="case-number">Дело №1</div>
+      <div class="case-text" id="case-text"></div>
+      <div class="options" id="case-options"></div>
+    </div>
+
+    <div class="result-box" id="result-box">
+      <div class="result-title" id="result-title"></div>
+      <div class="result-explain" id="result-explain"></div>
+      <div class="law-ref" id="law-ref"></div>
+    </div>
+
+    <button class="btn btn-block" id="btn-next" style="display:none;">Следующее дело →</button>
+  </div>
+
+  <!-- ===== SCREEN: LEVEL COMPLETE ===== -->
+  <div id="screen-level-done" class="screen">
+    <!-- Постоянная карточка юриста -->
+    <div class="lawyer-card">
+      <div class="lawyer-avatar">⚖</div>
+      <div class="lawyer-info">
+        <div class="lawyer-name" id="done-lawyer-name">—</div>
+        <div class="lawyer-meta">
+          <span class="lawyer-spec" id="done-lawyer-spec">—</span>
+          <span class="lawyer-level-badge" id="done-lawyer-level">Ур. 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <div style="font-size:64px; margin:20px 0;" id="level-medal">🏅</div>
+      <h2 id="level-title">Уровень 1 завершён!</h2>
+      <p style="color:#8a7a68; margin:12px 0 24px;" id="level-subtitle"></p>
+    </div>
+
+    <div class="final-score">
+      <div class="big" id="level-money">0 ₽</div>
+      <div class="label">Гонорар за уровень</div>
+      <div style="margin-top:16px; display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+        <div><div class="label">Правильно</div><div style="font-size:24px; font-weight:bold;" id="level-correct">0 / 10</div></div>
+        <div><div class="label">Опыт</div><div style="font-size:24px; font-weight:bold;" id="level-exp">0</div></div>
+      </div>
+    </div>
+
+    <button class="btn btn-block" id="btn-next-level">Перейти на уровень 2 →</button>
+  </div>
+
+  <!-- ===== SCREEN: FINAL RESULTS ===== -->
+  <div id="screen-results" class="screen">
+    <h2 style="text-align:center; margin-bottom:20px;">🏆 Итоги всей практики</h2>
+
+    <!-- Постоянная карточка юриста -->
+    <div class="lawyer-card">
+      <div class="lawyer-avatar">⚖</div>
+      <div class="lawyer-info">
+        <div class="lawyer-name" id="final-lawyer-name">—</div>
+        <div class="lawyer-meta">
+          <span class="lawyer-level-badge" id="final-lawyer-level">Ур. 1</span>
+          <span style="font-size:11px; color:#8a7a68;" id="final-lawyer-specs">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="final-score">
+      <div class="medal" id="result-medal">🏆</div>
+      <div class="big" id="result-total">0 ₽</div>
+      <div class="label">Общий гонорар</div>
+      <div style="margin-top:20px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+        <div><div class="label">Опыт</div><div style="font-size:24px; font-weight:bold;" id="result-exp">0</div></div>
+        <div><div class="label">Правильно</div><div style="font-size:24px; font-weight:bold;" id="result-correct">0 / 30</div></div>
+        <div><div class="label">Уровень</div><div style="font-size:24px; font-weight:bold;" id="result-level">1</div></div>
+      </div>
+    </div>
+
+    <div id="result-message" style="text-align:center; font-style:italic; color:#8a7a68; margin:20px 0;"></div>
+    <button class="btn btn-block" id="btn-restart">Играть снова 🔄</button>
+  </div>
+</div>
+
+<script>
+// ==================== СПЕЦИАЛИЗАЦИИ ====================
+const SPECIALIZATIONS = {
+  criminal: { name: "Уголовное право", color: "#f5d4c0", bonus: { logic: 2, rhetoric: 1, empathy: 0 } },
+  civil:    { name: "Гражданское право", color: "#c8dcf0", bonus: { logic: 1, rhetoric: 0, empathy: 2 } },
+  family:   { name: "Семейное право", color: "#f5e0d0", bonus: { logic: 0, rhetoric: 1, empathy: 3 } },
+  corp:     { name: "Корпоративное право", color: "#c8e6d0", bonus: { logic: 3, rhetoric: 1, empathy: 0 } }
+};
+
+// ==================== ДЕЛА ====================
+// Все неправильные варианты — правдоподобные, но с изъяном.
+// correct — исходный индекс; при показе варианты перемешиваются.
+const CASES = {
+  1: {
+    criminal: [
+      { text: "Клиента обвиняют в краже в магазине. Камеры нечёткие, свидетелей нет.",
+        options: [
+          "Требовать очную ставку с охранником — пусть уличит",
+          "Запросить экспертизу записи камер — нечёткая запись не доказательство",
+          "Сразу предложить сделку со следствием — сэкономим время"
+        ], correct: 1, reward: 100, penalty: 0, skill: "logic",
+        explain: "Экспертиза записи может доказать нечёткость и поставить под сомнение обвинение.",
+        law: "УПК РФ ст. 74 — доказательствами являются любые сведения, на основе которых устанавливаются обстоятельства. Нечёткая запись не может быть достаточным доказательством." },
+      { text: "Подзащитный признался тебе в преступлении, но хочет молчать в суде.",
+        options: [
+          "Разгласить признание — это смягчит приговор",
+          "Объяснить последствия молчания и сохранить адвокатскую тайну",
+          "Убедить его отказаться от адвоката — так проще"
+        ], correct: 1, reward: 120, penalty: 20, skill: "empathy",
+        explain: "Адвокатская тайна неприкосновенна. Клиент сам решает, давать ли показания.",
+        law: "УПК РФ ст. 51 — никто не обязан свидетельствовать против себя. Адвокатская тайна защищена ст. 8 Закона об адвокатской деятельности." },
+      { text: "Свидетель путается в показаниях на допросе.",
+        options: [
+          "Надавить на него в суде — пусть скажет правду",
+          "Зафиксировать противоречия и использовать в защите",
+          "Игнорировать — свидетель не главное"
+        ], correct: 1, reward: 90, penalty: 0, skill: "logic",
+        explain: "Противоречия в показаниях свидетеля — сильный аргумент защиты.",
+        law: "УПК РФ ст. 278 — допрос свидетеля в суде. Противоречия с предыдущими показаниями могут быть оглашены и оспорены." },
+      { text: "Прокурор предлагает сделку: признание в обмен на мягкий срок.",
+        options: [
+          "Согласиться без обсуждения — прокурор плохого не предложит",
+          "Обсудить с клиентом все риски и решить вместе",
+          "Отказаться сразу — сделки унизительны"
+        ], correct: 1, reward: 110, penalty: 0, skill: "empathy",
+        explain: "Решение о сделке принимает клиент после консультации с адвокатом.",
+        law: "УПК РФ гл. 40.1 — досудебное соглашение о сотрудничестве заключается с обязательным участием защитника." },
+      { text: "Вещественное доказательство получено с нарушением процедуры.",
+        options: [
+          "Использовать его как есть — главное результат",
+          "Ходатайствовать об исключении доказательства",
+          "Спрятать доказательство — и дело развалится"
+        ], correct: 1, reward: 130, penalty: 10, skill: "logic",
+        explain: "Нарушение процедуры — основание для исключения доказательства.",
+        law: "УПК РФ ст. 75 — доказательства, полученные с нарушением закона, являются недопустимыми." },
+      { text: "Клиент хочет дать ложные показания, чтобы избежать срока.",
+        options: [
+          "Помочь придумать легенду — это защита",
+          "Отговорить и объяснить ответственность за лжесвидетельство",
+          "Молча согласиться — его дело"
+        ], correct: 1, reward: 100, penalty: 30, skill: "rhetoric",
+        explain: "Адвокат не вправе участвовать в даче ложных показаний.",
+        law: "УК РФ ст. 307 — заведомо ложные показания наказываются. Адвокат не может способствовать этому." },
+      { text: "Срок содержания под стражей подходит к концу, а дело не готово.",
+        options: [
+          "Ходатайствовать о продлении — следствию нужно время",
+          "Требовать освобождения из-за истечения срока",
+          "Подождать — само рассосётся"
+        ], correct: 1, reward: 140, penalty: 0, skill: "logic",
+        explain: "Истечение срока — законное основание требовать освобождения.",
+        law: "УПК РФ ст. 109 — сроки содержания под стражей. По истечении срока обвиняемый подлежит немедленному освобождению." },
+      { text: "Потерпевший готов к примирению за компенсацию.",
+        options: [
+          "Отказаться — примирение унизительно",
+          "Оценить риски и предложить клиенту вариант примирения",
+          "Заплатить из своего кармана — быстрее"
+        ], correct: 1, reward: 110, penalty: 0, skill: "empathy",
+        explain: "Примирение по некоторым делам — законный путь к смягчению.",
+        law: "УК РФ ст. 76 — освобождение от уголовной ответственности в связи с примирением с потерпевшим (для преступлений небольшой/средней тяжести)." },
+      { text: "Эксперт дал заключение, но ты видишь в нём ошибки.",
+        options: [
+          "Согласиться — эксперт же специалист",
+          "Заказать рецензию и оспорить заключение",
+          "Пожаловаться в СМИ — пусть общество рассудит"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Рецензия на экспертизу — стандартный инструмент защиты.",
+        law: "УПК РФ ст. 207 — возможно проведение дополнительной или повторной экспертизы при сомнениях в заключении." },
+      { text: "Судья явно предвзят к твоему клиенту.",
+        options: [
+          "Промолчать до приговора — не злить судью",
+          "Заявить отвод судье с обоснованием",
+          "Устроить скандал в зале — привлечь внимание"
+        ], correct: 1, reward: 150, penalty: 10, skill: "rhetoric",
+        explain: "Отвод — процессуальный способ защитить права подзащитного.",
+        law: "УПК РФ ст. 61-62 — основания для отвода судьи. Заявление об отводе подаётся до начала судебного следствия." }
+    ],
+    civil: [
+      { text: "Соседи затопили квартиру клиента. Они отказываются платить.",
+        options: [
+          "Вызвать полицию — пусть разбираются",
+          "Составить акт и досудебную претензию",
+          "Сразу идти в суд без документов — там разберутся"
+        ], correct: 1, reward: 100, penalty: 0, skill: "logic",
+        explain: "Акт и претензия — основа для суда и доказательство попытки урегулирования.",
+        law: "ГК РФ ст. 1064 — общие основания ответственности за причинение вреда. Акт затопления — ключевое доказательство." },
+      { text: "Клиент подписал договор, не читая, и теперь терпит убытки.",
+        options: [
+          "Сказать, что помочь нечем — сам виноват",
+          "Искать основания для расторжения или изменения договора",
+          "Подделать договор — перепишем условия"
+        ], correct: 1, reward: 110, penalty: 20, skill: "logic",
+        explain: "Всегда есть основания — заблуждение, кабальность, нарушение формы.",
+        law: "ГК РФ ст. 178 — сделка, совершённая под влиянием существенного заблуждения, может быть оспорена." },
+      { text: "Продавец авто скрыл, что машина в залоге.",
+        options: [
+          "Ничего не делать — залог снимется после выплаты",
+          "Требовать расторжения сделки и возврата денег",
+          "Просто предупредить продавца — совесть замучает"
+        ], correct: 1, reward: 120, penalty: 0, skill: "rhetoric",
+        explain: "Скрытие обременения — основание для расторжения и убытков.",
+        law: "ГК РФ ст. 460 — обязанность продавца передать товар свободным от прав третьих лиц. Нарушение даёт право на расторжение." },
+      { text: "Работодатель задерживает зарплату на 3 месяца.",
+        options: [
+          "Ждать дальше — может, наладится",
+          "Подать жалобу в трудовую инспекцию и суд",
+          "Уволиться молча — нервы дороже"
+        ], correct: 1, reward: 120, penalty: 0, skill: "logic",
+        explain: "Инспекция + суд — быстрый путь взыскать долг с процентами.",
+        law: "ТК РФ ст. 236 — материальная ответственность работодателя за задержку выплат (проценты за каждый день)." },
+      { text: "Клиент хочет взыскать моральный вред за некачественную услугу.",
+        options: [
+          "Требовать миллион без доказательств — суд оценит",
+          "Собрать доказательства страданий и обосновать сумму",
+          "Отказаться — моральный вред не взыскивают"
+        ], correct: 1, reward: 110, penalty: 0, skill: "empathy",
+        explain: "Размер морального вреда нужно обосновывать документально.",
+        law: "ГК РФ ст. 151 — компенсация морального вреда. Размер определяется судом с учётом степени страданий." },
+      { text: "Партнёр по бизнесу присвоил общую долю.",
+        options: [
+          "Простить — партнёр всё-таки",
+          "Запросить бухгалтерию и подать иск о неосновательном обогащении",
+          "Забрать его машину в счёт долга"
+        ], correct: 1, reward: 130, penalty: 10, skill: "logic",
+        explain: "Документы и иск — законный путь, а не самоуправство.",
+        law: "ГК РФ ст. 1102 — лицо, которое без оснований приобрело имущество за счёт другого, обязано возвратить неосновательное обогащение." },
+      { text: "Клиента увольняют без объяснения причин.",
+        options: [
+          "Согласиться — так бывает",
+          "Требовать письменное основание и оспаривать увольнение",
+          "Порвать трудовую книжку — начнём с чистого листа"
+        ], correct: 1, reward: 120, penalty: 0, skill: "rhetoric",
+        explain: "Увольнение требует основания и оформления — иначе восстановление.",
+        law: "ТК РФ ст. 81 — основания расторжения трудового договора по инициативе работодателя должны быть указаны. Без основания увольнение незаконно." },
+      { text: "Застройщик сдал квартиру с трещинами.",
+        options: [
+          "Принять и молчать — трещины не смертельны",
+          "Составить дефектный акт и требовать устранения/скидки",
+          "Продать квартиру — не наша проблема"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Дефектный акт — основание для претензий к застройщику.",
+        law: "ГК РФ ст. 7 214-ФЗ — при передаче объекта дольщик вправе требовать устранения недостатков или соразмерного уменьшения цены." },
+      { text: "Клиент дал в долг без расписки, должник не возвращает.",
+        options: [
+          "Сдаться — без расписки шансов нет",
+          "Искать косвенные доказательства (переписка, переводы)",
+          "Угрожать должнику — долг вернут быстрее"
+        ], correct: 1, reward: 110, penalty: 20, skill: "logic",
+        explain: "Переписка и банковские переводы — доказательства займа.",
+        law: "ГК РФ ст. 808 — договор займа может быть подтверждён иными документами, не только распиской. Переписка и переводы принимаются судом." },
+      { text: "Оппонент предлагает мировое соглашение на выгодных условиях.",
+        options: [
+          "Отказаться — суд честнее",
+          "Оценить риски суда и обсудить соглашение с клиентом",
+          "Подписать не читая — быстрее закончим"
+        ], correct: 1, reward: 120, penalty: 0, skill: "empathy",
+        explain: "Мировое соглашение часто выгоднее и быстрее суда.",
+        law: "ГПК РФ ст. 39 — стороны вправе заключить мировое соглашение на любой стадии процесса." }
+    ],
+    family: [
+      { text: "Супруги делят квартиру, купленную в браке.",
+        options: [
+          "Отдать всё тому, кто больше зарабатывал — справедливо",
+          "Определить доли по закону (совместная собственность)",
+          "Продать квартиру без согласия второго — деньги разделим"
+        ], correct: 1, reward: 100, penalty: 0, skill: "logic",
+        explain: "Имущество, купленное в браке, — совместная собственность.",
+        law: "СК РФ ст. 34 — имущество, нажитое супругами во время брака, является их совместной собственностью." },
+      { text: "Отец хочет видеть ребёнка, мать против без причины.",
+        options: [
+          "Согласиться с матерью — ей виднее",
+          "Установить график общения через суд/соглашение",
+          "Забрать ребёнка тайно — отец имеет право"
+        ], correct: 1, reward: 120, penalty: 30, skill: "empathy",
+        explain: "График общения устанавливается законно — иначе похищение ребёнка.",
+        law: "СК РФ ст. 66 — осуществление родительских прав родителем, проживающим отдельно. Споры решаются судом с участием органов опеки." },
+      { text: "Клиентка хочет развод без скандала, муж против.",
+        options: [
+          "Устроить публичный скандал — пусть стыдится",
+          "Попробовать медиацию и соглашение",
+          "Подделать подпись мужа — и дело в шляпе"
+        ], correct: 1, reward: 110, penalty: 40, skill: "empathy",
+        explain: "Медиация снижает конфликт и ускоряет развод.",
+        law: "СК РФ ст. 23 — расторжение брака в суде при взаимном согласии. Суд принимает меры к примирению, но может расторгнуть брак." },
+      { text: "Бывший муж не платит алименты.",
+        options: [
+          "Запретить ему видеться с детьми самовольно",
+          "Взыскать алименты через суд и приставов",
+          "Простить долг — не хочу войн"
+        ], correct: 1, reward: 120, penalty: 10, skill: "logic",
+        explain: "Алименты взыскиваются законно, нельзя лишать общения в отместку.",
+        law: "СК РФ ст. 80 — родители обязаны содержать несовершеннолетних детей. При неуплате — взыскание через суд и ФССП." },
+      { text: "Бабушка хочет оспорить завещание в свою пользу.",
+        options: [
+          "Помочь подделать документы — бабушка заслужила",
+          "Проверить дееспособность наследодателя и основания оспаривания",
+          "Сказать, что шансов нет — зря время тратить"
+        ], correct: 1, reward: 120, penalty: 20, skill: "logic",
+        explain: "Оспаривание завещания требует законных оснований.",
+        law: "ГК РФ ст. 177 — сделка, совершённая гражданином, не способным понимать значение своих действий, может быть признана недействительной." },
+      { text: "Клиент хочет лишить бывшую жену родительских прав.",
+        options: [
+          "Подать иск сразу — суд разберётся",
+          "Собрать доказательства опасного поведения для ребёнка",
+          "Запугать её — сама откажется от прав"
+        ], correct: 1, reward: 130, penalty: 20, skill: "empathy",
+        explain: "Лишение прав требует серьёзных доказательств вины родителя.",
+        law: "СК РФ ст. 69 — лишение родительских прав возможно при уклонении от обязанностей, злоупотреблении правами, жестоком обращении." },
+      { text: "Ребёнок 15 лет хочет жить с отцом, мать против.",
+        options: [
+          "Игнорировать мнение ребёнка — он ещё маленький",
+          "Учесть мнение ребёнка при определении места жительства",
+          "Решить без суда — просто перевезти вещи"
+        ], correct: 1, reward: 110, penalty: 0, skill: "empathy",
+        explain: "С 10 лет мнение ребёнка учитывается судом.",
+        law: "СК РФ ст. 57 — ребёнок вправе выражать своё мнение. Суд учитывает мнение ребёнка, достигшего 10 лет." },
+      { text: "Пара хочет заключить брачный договор.",
+        options: [
+          "Сказать, что это незаконно",
+          "Составить договор с учётом интересов обоих",
+          "Настоять на выгодных только клиенту условиях — потом оспорим"
+        ], correct: 1, reward: 110, penalty: 10, skill: "rhetoric",
+        explain: "Брачный договор должен быть сбалансирован, иначе оспорим.",
+        law: "СК РФ ст. 40-42 — брачный договор регулирует имущественные отношения супругов. Не может содержать условий, ставящих одного в крайне неблагоприятное положение." },
+      { text: "Клиентка узнала, что муж скрывает доходы при разводе.",
+        options: [
+          "Смириться — не докажем",
+          "Запросить сведения о доходах и доказать сокрытие",
+          "Украсть документы мужа — вот и доказательства"
+        ], correct: 1, reward: 120, penalty: 20, skill: "logic",
+        explain: "Сокрытие доходов доказывается запросами и судебной экспертизой.",
+        law: "СК РФ ст. 39 — при разделе имущества суд может отступить от равенства долей исходя из интересов несовершеннолетних или заслуживающих внимания обстоятельств." },
+      { text: "Опека хочет изъять ребёнка из семьи.",
+        options: [
+          "Согласиться — опека плохого не сделает",
+          "Оспорить решение и доказать, что условия приемлемы",
+          "Спрятать ребёнка — пусть ищут"
+        ], correct: 1, reward: 130, penalty: 30, skill: "rhetoric",
+        explain: "Изъятие — крайняя мера, её можно оспорить в суде.",
+        law: "СК РФ ст. 77 — при непосредственной угрозе жизни ребёнка орган опеки вправе немедленно отобрать его. Решение может быть оспорено в суде." }
+    ],
+    corp: [
+      { text: "Партнёр вывел деньги компании на свой счёт.",
+        options: [
+          "Промолчать — отношения дороже",
+          "Запросить аудит и взыскать убытки с директора",
+          "Вывести деньги в ответ — компенсируем"
+        ], correct: 1, reward: 120, penalty: 10, skill: "logic",
+        explain: "Аудит и иск об убытках — законный путь.",
+        law: "ГК РФ ст. 53.1 — лицо, уполномоченное выступать от имени юрлица, обязано действовать добросовестно. Убытки взыскиваются по иску участников." },
+      { text: "Контрагент не поставил товар по договору.",
+        options: [
+          "Ждать — может, ещё поставит",
+          "Направить претензию и требовать неустойку",
+          "Приехать и забрать товар силой — он наш"
+        ], correct: 1, reward: 110, penalty: 20, skill: "rhetoric",
+        explain: "Претензия и неустойка — стандартный механизм.",
+        law: "ГК РФ ст. 330 — неустойка (штраф, пеня) — определённая законом или договором денежная сумма при неисполнении обязательства." },
+      { text: "Компания хочет поглотить конкурента.",
+        options: [
+          "Действовать без проверки — время дорого",
+          "Провести due diligence и структурировать сделку",
+          "Подкупить менеджеров конкурента — узнаем всё"
+        ], correct: 1, reward: 130, penalty: 40, skill: "logic",
+        explain: "Due diligence выявляет риски до сделки.",
+        law: "ГК РФ ст. 447-449 — порядок заключения договора на торгах. При слияниях проверяется соответствие антимонопольному законодательству (ФЗ-135)." },
+      { text: "Учредитель хочет выйти из ООО.",
+        options: [
+          "Забрать имущество компании — соразмерно доле",
+          "Оценить долю и оформить выход по закону",
+          "Просто перестать появляться — само оформится"
+        ], correct: 1, reward: 120, penalty: 10, skill: "logic",
+        explain: "Выход учредителя оформляется с оценкой доли.",
+        law: "ГК РФ ст. 94 — участник ООО вправе выйти из общества путём отчуждения доли обществу, если это предусмотрено уставом." },
+      { text: "Сотрудник уходит к конкуренту с базой клиентов.",
+        options: [
+          "Угрожать ему — испугается",
+          "Применить соглашение о неконкуренции и NDA",
+          "Сменить все пароли — и дело с концом"
+        ], correct: 1, reward: 120, penalty: 20, skill: "rhetoric",
+        explain: "NDA и соглашение о неконкуренции — правовые инструменты.",
+        law: "ТК РФ ст. 57 — в трудовой договор могут включаться условия о неразглашении охраняемой законом тайны (коммерческой, служебной)." },
+      { text: "Клиент хочет скрыть часть прибыли от налогов.",
+        options: [
+          "Помочь со схемой — все так делают",
+          "Отговорить и предложить законную оптимизацию",
+          "Молча согласиться — не наше дело"
+        ], correct: 1, reward: 130, penalty: 50, skill: "empathy",
+        explain: "Адвокат не вправе помогать в налоговых преступлениях.",
+        law: "УК РФ ст. 199 — уклонение от уплаты налогов с организации. Адвокат не может участвовать в преступной схеме." },
+      { text: "Акционер оспаривает решение общего собрания.",
+        options: [
+          "Игнорировать — большинство решило",
+          "Проверить соблюдение процедуры созыва и голосования",
+          "Подделать протокол — переголосуем"
+        ], correct: 1, reward: 120, penalty: 30, skill: "logic",
+        explain: "Нарушение процедуры — основание для оспаривания.",
+        law: "ГК РФ ст. 181.4 — решение собрания может быть оспорено при существенном нарушении порядка принятия." },
+      { text: "Компания банкротится, кредиторы требуют возврата.",
+        options: [
+          "Спрятать активы — переоформим на родню",
+          "Провести законную процедуру банкротства",
+          "Просто закрыть фирму — и всё"
+        ], correct: 1, reward: 130, penalty: 40, skill: "logic",
+        explain: "Скрытие активов — субсидиарная ответственность.",
+        law: "ФЗ-127 «О несостоятельности (банкротстве)» ст. 61.11 — субсидиарная ответственность контролирующих лиц за доведение до банкротства." },
+      { text: "Партнёр хочет изменить устав в свою пользу.",
+        options: [
+          "Подписать не глядя — партнёр же",
+          "Проверить изменения и защитить права клиента",
+          "Устроить скандал на собрании — пусть устыдится"
+        ], correct: 1, reward: 110, penalty: 0, skill: "rhetoric",
+        explain: "Изменения устава проверяются на соответствие закону и интересам.",
+        law: "ГК РФ ст. 52 — устав утверждается учредителями. Изменения в устав требуют решения общего собрания (для ООО — не менее 2/3 голосов, если иное не предусмотрено)." },
+      { text: "Контрагент предлагает сделку без документов «на доверии».",
+        options: [
+          "Согласиться — все так делают",
+          "Настоять на письменном договоре и проверке контрагента",
+          "Взять предоплату наличными — и будь что будет"
+        ], correct: 1, reward: 120, penalty: 20, skill: "logic",
+        explain: "Без договора и проверки — высокий риск мошенничества.",
+        law: "ГК РФ ст. 161 — сделки юридических лиц между собой должны совершаться в письменной форме. Несоблюдение лишает права ссылаться на свидетельские показания." }
+    ]
+  },
+
+  2: {
+    criminal: [
+      { text: "Обвиняемый — несовершеннолетний 16 лет. Следователь допрашивает без педагога.",
+        options: [
+          "Промолчать — потом оспорим",
+          "Заявить о нарушении и потребовать участие педагога",
+          "Согласиться — сойдёт и так"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Допрос несовершеннолетнего без педагога — нарушение.",
+        law: "УПК РФ ст. 425 — допрос несовершеннолетнего подозреваемого/обвиняемого проводится с участием защитника и педагога (психолога)." },
+      { text: "Следователь отказывает в ознакомлении с материалами дела.",
+        options: [
+          "Смириться — потом ознакомимся в суде",
+          "Обжаловать отказ прокурору или в суд",
+          "Устроить скандал — привлечь внимание"
+        ], correct: 1, reward: 120, penalty: 0, skill: "rhetoric",
+        explain: "Право на ознакомление с материалами — процессуальное право.",
+        law: "УПК РФ ст. 217 — по окончании предварительного следствия обвиняемый и защитник вправе знакомиться со всеми материалами дела." },
+      { text: "Судья отказал в вызове свидетеля защиты.",
+        options: [
+          "Принять — судья лучше знает",
+          "Заявить ходатайство повторно с обоснованием",
+          "Сорвать заседание — пусть перенесут"
+        ], correct: 1, reward: 140, penalty: 10, skill: "logic",
+        explain: "Отказ в вызове свидетеля защиты нарушает право на защиту.",
+        law: "УПК РФ ст. 271 — суд не вправе отказать в вызове свидетеля, явившегося в суд, если он может дать показания об обстоятельствах дела." },
+      { text: "Клиент страдает психическим расстройством, но признан вменяемым.",
+        options: [
+          "Игнорировать — вменяем, значит здоров",
+          "Учесть состояние при назначении наказания",
+          "Скрыть это от суда — не навредим"
+        ], correct: 1, reward: 120, penalty: 20, skill: "empathy",
+        explain: "Психическое состояние учитывается при назначении наказания.",
+        law: "УК РФ ст. 22 — вменяемое лицо с психическим расстройством, не исключающим вменяемости, подлежит уголовной ответственности. Расстройство учитывается судом." },
+      { text: "Защита хочет провести независимую экспертизу.",
+        options: [
+          "Ждать, пока назначат официальную",
+          "Заявить ходатайство о назначении экспертизы",
+          "Провести самостоятельно тайно — потом предъявим"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Экспертиза назначается по ходатайству стороны.",
+        law: "УПК РФ ст. 283 — суд по ходатайству сторон может назначить судебную экспертизу." }
+    ],
+    civil: [
+      { text: "Клиент пропустил срок исковой давности (3 года).",
+        options: [
+          "Всё потеряно — срок не восстановить",
+          "Проверить основания для восстановления срока",
+          "Подделать дату — никто не заметит"
+        ], correct: 1, reward: 120, penalty: 0, skill: "logic",
+        explain: "Срок может быть восстановлен по уважительной причине.",
+        law: "ГК РФ ст. 205 — восстановление срока исковой давности при наличии уважительных причин пропуска." },
+      { text: "Покупатель хочет вернуть товар надлежащего качества.",
+        options: [
+          "Заставить продавца принять — клиент всегда прав",
+          "Объяснить, что возврат возможен только при недостатках или по условиям договора",
+          "Посоветовать сломать товар — тогда примут"
+        ], correct: 1, reward: 110, penalty: 10, skill: "rhetoric",
+        explain: "Возврат качественного товара — только по закону о защите прав потребителей.",
+        law: "Закон РФ «О защите прав потребителей» ст. 25 — возврат товара надлежащего качества возможен в течение 14 дней, если сохранён вид и есть чек." },
+      { text: "Арендатор не платит 2 месяца, арендодатель хочет выселить.",
+        options: [
+          "Выкинуть вещи — и дело с концом",
+          "Направить предупреждение и расторгнуть договор через суд",
+          "Сменить замки — пусть не заходит"
+        ], correct: 1, reward: 120, penalty: 20, skill: "logic",
+        explain: "Расторжение договора аренды требует предупреждения.",
+        law: "ГК РФ ст. 619 — по требованию арендодателя договор может быть расторгнут судом при невнесении арендной платы более двух раз подряд." },
+      { text: "Клиент купил товар с недостатками, гарантия истекла.",
+        options: [
+          "Ничего не делать — гарантия истекла",
+          "Доказать, что недостатки возникли до передачи",
+          "Написать жалобу в ООН — пусть разбираются"
+        ], correct: 1, reward: 110, penalty: 0, skill: "logic",
+        explain: "За пределами гарантии бремя доказывания на покупателе.",
+        law: "Закон РФ «О защите прав потребителей» ст. 19 — при истечении гарантии потребитель вправе предъявить требования, если докажет, что недостатки возникли до передачи товара." },
+      { text: "Наследник пропустил срок вступления в наследство.",
+        options: [
+          "Сдаться — срок прошёл",
+          "Обратиться в суд с заявлением о восстановлении срока",
+          "Подделать документы — вступим задним числом"
+        ], correct: 1, reward: 130, penalty: 20, skill: "empathy",
+        explain: "Срок может быть восстановлен судом.",
+        law: "ГК РФ ст. 1155 — по заявлению наследника, пропустившего срок, суд может восстановить срок и признать его принявшим наследство." }
+    ],
+    family: [
+      { text: "Супруги хотят разделить бизнес, оформленный на мужа.",
+        options: [
+          "Оставить мужу — он же оформлял",
+          "Включить бизнес в совместно нажитое имущество",
+          "Забрать силой — половина наша"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Бизнес, созданный в браке, — совместная собственность.",
+        law: "СК РФ ст. 34 — совместной собственностью является имущество, нажитое в браке, включая доходы от предпринимательской деятельности." },
+      { text: "Отец требует алименты на ребёнка, который живёт с матерью, но мать против.",
+        options: [
+          "Согласиться с матерью — ей виднее",
+          "Разъяснить, что алименты — обязанность, а не право",
+          "Угрожать матери — пусть подпишет"
+        ], correct: 1, reward: 110, penalty: 0, skill: "rhetoric",
+        explain: "Алименты — обязанность родителя, независимо от отношений.",
+        law: "СК РФ ст. 80 — родители обязаны содержать своих несовершеннолетних детей. Порядок и форма содержания определяются соглашением или судом." },
+      { text: "Ребёнок-инвалид, родители разводятся. Кто платит алименты?",
+        options: [
+          "Только мать — ребёнок с ней",
+          "Оба родителя обязаны содержать ребёнка-инвалида",
+          "Никто после 18 лет — он уже взрослый"
+        ], correct: 1, reward: 120, penalty: 0, skill: "empathy",
+        explain: "Родители обязаны содержать детей-инвалидов и после 18 лет.",
+        law: "СК РФ ст. 85 — родители обязаны содержать своих нетрудоспособных совершеннолетних детей, нуждающихся в помощи." },
+      { text: "Мать хочет вывезти ребёнка за границу, отец против.",
+        options: [
+          "Вывезти тайно — мать имеет право",
+          "Получить согласие отца или разрешение суда",
+          "Подделать документы — никто не проверит"
+        ], correct: 1, reward: 130, penalty: 30, skill: "logic",
+        explain: "Вывоз ребёнка без согласия второго родителя может быть незаконным.",
+        law: "СК РФ ст. 65 — родительские права не могут осуществляться в противоречии с интересами детей. Споры о выезде решаются судом." },
+      { text: "Бывшие супруги хотят изменить размер алиментов.",
+        options: [
+          "Просто договориться на словах — сойдёт",
+          "Заключить нотариальное соглашение или обратиться в суд",
+          "Не платить вообще — надоело"
+        ], correct: 1, reward: 110, penalty: 10, skill: "rhetoric",
+        explain: "Изменение алиментов оформляется соглашением или судом.",
+        law: "СК РФ ст. 101 — соглашение об уплате алиментов заключается в письменной форме и подлежит нотариальному удостоверению." }
+    ],
+    corp: [
+      { text: "Директор совершает сделку с заинтересованностью без одобрения.",
+        options: [
+          "Промолчать — потом разберёмся",
+          "Оспорить сделку в суде",
+          "Одобрить задним числом — и всё"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Сделка с заинтересованностью требует одобрения.",
+        law: "ГК РФ ст. 174 — сделка, совершённая с нарушением ограничений полномочий, может быть признана недействительной по иску заинтересованного лица." },
+      { text: "Участник ООО хочет продать долю третьему лицу.",
+        options: [
+          "Продать без уведомления — моя доля",
+          "Соблюсти преимущественное право других участников",
+          "Подарить долю — обойдём правило"
+        ], correct: 1, reward: 120, penalty: 10, skill: "logic",
+        explain: "Другие участники имеют преимущественное право покупки.",
+        law: "ГК РФ ст. 93 — участники ООО пользуются преимущественным правом покупки доли по цене предложения третьему лицу." },
+      { text: "Компания хочет провести реорганизацию в форме слияния.",
+        options: [
+          "Просто объединиться — документы потом",
+          "Уведомить кредиторов и соблюсти процедуру",
+          "Закрыть одну фирму и открыть новую — быстрее"
+        ], correct: 1, reward: 130, penalty: 20, skill: "rhetoric",
+        explain: "Реорганизация требует уведомления кредиторов.",
+        law: "ГК РФ ст. 60 — кредитор вправе требовать досрочного исполнения обязательства при реорганизации должника." },
+      { text: "Работник требует компенсацию за задержку зарплаты.",
+        options: [
+          "Отказать — подождёт",
+          "Выплатить проценты по ст. 236 ТК РФ",
+          "Уволить его — нечего требовать"
+        ], correct: 1, reward: 120, penalty: 20, skill: "empathy",
+        explain: "Задержка зарплаты влечёт проценты в пользу работника.",
+        law: "ТК РФ ст. 236 — денежная компенсация не ниже 1/150 ключевой ставки ЦБ за каждый день задержки." },
+      { text: "Партнёр хочет выйти из состава учредителей, забрав оборудование.",
+        options: [
+          "Отдать оборудование — соразмерно доле",
+          "Выплатить действительную стоимость доли",
+          "Отказать без объяснений — сам уйдёт"
+        ], correct: 1, reward: 130, penalty: 10, skill: "logic",
+        explain: "При выходе выплачивается стоимость доли, а не имущество.",
+        law: "ГК РФ ст. 94 — участнику, вышедшему из ООО, выплачивается действительная стоимость его доли, определяемая на основании данных бухгалтерской отчётности." }
+    ]
+  },
+
+  3: {
+    criminal: [
+      { text: "Следователь изъял документы без протокола.",
+        options: [
+          "Согласиться — документы всё равно приобщат",
+          "Заявить о недопустимости доказательства",
+          "Украсть протокол — и нет проблемы"
+        ], correct: 1, reward: 140, penalty: 0, skill: "logic",
+        explain: "Изъятие без протокола — нарушение.",
+        law: "УПК РФ ст. 182 — при обыске (выемке) составляется протокол. Нарушение влечёт недопустимость доказательств (ст. 75)." },
+      { text: "Клиенту грозит пожизненное. Он хочет признать вину для смягчения.",
+        options: [
+          "Отговорить — признание только навредит",
+          "Оценить последствия и обсудить стратегию",
+          "Согласиться без раздумий — быстрее закончим"
+        ], correct: 1, reward: 150, penalty: 20, skill: "empathy",
+        explain: "Признание вины не всегда смягчает наказание.",
+        law: "УК РФ ст. 61 — явка с повинной и активное способствование раскрытию преступления — смягчающие обстоятельства. Но по тяжким статьям эффект ограничен." },
+      { text: "Судья отказывает в повторной экспертизе.",
+        options: [
+          "Смириться — судья решил",
+          "Обжаловать отказ в вышестоящем суде",
+          "Устроить скандал — привлечь прессу"
+        ], correct: 1, reward: 140, penalty: 10, skill: "rhetoric",
+        explain: "Отказ в экспертизе можно обжаловать.",
+        law: "УПК РФ ст. 207 — повторная экспертиза назначается при сомнениях в обоснованности заключения. Отказ может быть обжалован." },
+      { text: "Потерпевший не является в суд, дело разваливается.",
+        options: [
+          "Радоваться — дело развалится само",
+          "Ходатайствовать о продолжении рассмотрения без потерпевшего",
+          "Найти его силой — и привести"
+        ], correct: 1, reward: 130, penalty: 0, skill: "logic",
+        explain: "Неявка потерпевшего не всегда прекращает дело.",
+        law: "УПК РФ ст. 249 — при неявке потерпевшего суд может продолжить рассмотрение, если его явка не признана обязательной." },
+      { text: "Защитник узнал о фальсификации доказательств обвинением.",
+        options: [
+          "Промолчать — не поверят",
+          "Заявить о фальсификации и требовать проверки",
+          "Сфальсифицировать в ответ — война так война"
+        ], correct: 1, reward: 160, penalty: 20, skill: "rhetoric",
+        explain: "Фальсификация доказательств — преступление.",
+        law: "УК РФ ст. 303 — фальсификация доказательств по уголовному делу наказывается лишением свободы." }
+    ],
+    civil: [
+      { text: "Клиент хочет взыскать убытки от пожара, но виновник не установлен.",
+        options: [
+          "Сдаться — виновника нет",
+          "Провести пожарно-техническую экспертизу",
+          "Обвинить всех соседей — пусть доказывают"
+        ], correct: 1, reward: 140, penalty: 0, skill: "logic",
+        explain: "Экспертиза устанавливает причину и виновника.",
+        law: "ГК РФ ст. 1064 — вред, причинённый имуществу, возмещается лицом, причинившим вред. Причина устанавливается экспертизой." },
+      { text: "Банк навязывает страховку при выдаче кредита.",
+        options: [
+          "Подписать — без страховки не дадут",
+          "Отказаться и потребовать перерасчёт",
+          "Согласиться и не платить — потом оспорим"
+        ], correct: 1, reward: 130, penalty: 10, skill: "rhetoric",
+        explain: "Навязывание страховки незаконно.",
+        law: "Закон «О защите прав потребителей» ст. 16 — условия, ущемляющие права потребителя, недействительны. Навязывание допуслуг запрещено." },
+      { text: "Клиент пострадал от некачественной медицинской услуги.",
+        options: [
+          "Ничего не делать — медицина сложная",
+          "Собрать медицинские документы и провести экспертизу",
+          "Написать в газету — пусть ославят"
+        ], correct: 1, reward: 140, penalty: 0, skill: "empathy",
+        explain: "Медицинская экспертиза — ключевое доказательство.",
+        law: "ГК РФ ст. 1068 — юридическое лицо возмещает вред, причинённый его работником. Медицинская организация отвечает за вред от некачественной услуги." },
+      { text: "Клиент купил квартиру, а её обременяет ипотека предыдущего владельца.",
+        options: [
+          "Оставить как есть — ипотека снимется",
+          "Требовать расторжения и возврата денег",
+          "Продать третьему лицу — переложим проблему"
+        ], correct: 1, reward: 130, penalty: 20, skill: "logic",
+        explain: "Скрытие обременения — основание для расторжения.",
+        law: "ГК РФ ст. 460 — продавец обязан передать товар свободным от прав третьих лиц. Нарушение даёт покупателю право требовать расторжения." },
+      { text: "Клиент хочет оспорить кадастровую стоимость недвижимости.",
+        options: [
+          "Смириться — государство установило",
+          "Обратиться в комиссию или суд с отчётом оценщика",
+          "Подделать документы — снизим стоимость"
+        ], correct: 1, reward: 130, penalty: 10, skill: "rhetoric",
+        explain: "Кадастровую стоимость можно оспорить.",
+        law: "ФЗ-135 «Об оценочной деятельности» — результаты определения кадастровой стоимости могут быть оспорены в суде или комиссии." }
+    ],
+    family: [
+      { text: "Супруги заключают брачный договор, но кредиторы могут пострадать.",
+        options: [
+          "Подписать — кредиторы не в курсе",
+          "Проверить, не нарушает ли договор права кредиторов",
+          "Скрыть договор от кредиторов — так надёжнее"
+        ], correct: 1, reward: 140, penalty: 20, skill: "logic",
+        explain: "Брачный договор не должен нарушать права кредиторов.",
+        law: "СК РФ ст. 46 — супруг обязан уведомить кредитора о заключении, изменении или расторжении брачного договора. При невыполнении отвечает по обязательствам независимо от содержания договора." },
+      { text: "Ребёнок хочет отказаться от общения с отцом, который платит алименты.",
+        options: [
+          "Заставить общаться — отец имеет право",
+          "Учесть мнение ребёнка и обратиться в органы опеки",
+          "Прекратить алименты — раз не хочет видеть"
+        ], correct: 1, reward: 130, penalty: 10, skill: "empathy",
+        explain: "Мнение ребёнка учитывается, но алименты — отдельная обязанность.",
+        law: "СК РФ ст. 57 — ребёнок вправе выражать мнение. Суд учитывает мнение ребёнка, достигшего 10 лет, по вопросам, затрагивающим его интересы." },
+      { text: "Бывший супруг скрывает новое место работы для уклонения от алиментов.",
+        options: [
+          "Смириться — не найдём",
+          "Обратиться к приставам с заявлением о розыске",
+          "Нанять частного детектива — быстрее"
+        ], correct: 1, reward: 140, penalty: 0, skill: "logic",
+        explain: "Приставы вправе запрашивать информацию о должнике.",
+        law: "ФЗ-229 «Об исполнительном производстве» ст. 65 — судебный пристав вправе объявлять розыск должника и его имущества." },
+      { text: "Опека требует лишить мать прав из-за отсутствия работы.",
+        options: [
+          "Согласиться — опека плохого не потребует",
+          "Оспорить — отсутствие работы не основание для лишения прав",
+          "Найти ей работу — и проблема решена"
+        ], correct: 1, reward: 140, penalty: 20, skill: "rhetoric",
+        explain: "Отсутствие работы — не основание для лишения родительских прав.",
+        law: "СК РФ ст. 69 — лишение родительских прав возможно только по исчерпывающим основаниям (уклонение, злоупотребление, жестокое обращение и др.)." },
+      { text: "Супруги делят долги, оформленные на одного из них.",
+        options: [
+          "Долг остаётся на том, кто оформил",
+          "Проверить, был ли долг общим (на нужды семьи)",
+          "Переложить на детей — пусть платят"
+        ], correct: 1, reward: 130, penalty: 10, skill: "logic",
+        explain: "Общие долги супругов делятся пропорционально долям.",
+        law: "СК РФ ст. 39 — общие долги супругов при разделе имущества распределяются между супругами пропорционально присуждённым им долям." }
+    ],
+    corp: [
+      { text: "Компания получает иск от потребителя за некачественный товар.",
+        options: [
+          "Игнорировать — может, отзовут",
+          "Оценить риски и подготовить возражения",
+          "Уничтожить документы — нет доказательств"
+        ], correct: 1, reward: 140, penalty: 0, skill: "logic",
+        explain: "Игнорирование иска ведёт к проигрышу.",
+        law: "ГПК РФ ст. 56 — каждая сторона должна доказать обстоятельства, на которые ссылается. Ответчик готовит возражения и доказательства." },
+      { text: "Акционер требует выкупа акций по рыночной цене.",
+        options: [
+          "Отказать — акции не обязывают",
+          "Оценить основания и провести оценку акций",
+          "Выкупить по цене покупки — и всё"
+        ], correct: 1, reward: 140, penalty: 20, skill: "rhetoric",
+        explain: "Выкуп акций регулируется законом об АО.",
+        law: "ФЗ-208 «Об акционерных обществах» ст. 75 — акционер вправе требовать выкупа обществом всех или части принадлежащих ему акций в случаях, установленных законом." },
+      { text: "Компания хочет уволить сотрудника за разглашение коммерческой тайны.",
+        options: [
+          "Уволить без доказательств — нечего тянуть",
+          "Собрать доказательства и оформить увольнение по статье",
+          "Просто отстранить — без зарплаты"
+        ], correct: 1, reward: 140, penalty: 20, skill: "logic",
+        explain: "Увольнение за разглашение требует доказательств.",
+        law: "ТК РФ ст. 81 п. 6 пп. «в» — увольнение за разглашение охраняемой законом тайны, ставшей известной работнику в связи с исполнением трудовых обязанностей." },
+      { text: "Контрагент предлагает расторгнуть договор без выплаты неустойки.",
+        options: [
+          "Согласиться — главное расстаться",
+          "Оценить убытки и требовать компенсацию",
+          "Пригрозить бандитами — быстрее заплатит"
+        ], correct: 1, reward: 130, penalty: 10, skill: "rhetoric",
+        explain: "Расторжение договора не освобождает от ответственности за нарушение.",
+        law: "ГК РФ ст. 453 — при расторжении договора обязательства прекращаются, но сторона вправе требовать возмещения убытков, вызванных нарушением." },
+      { text: "Компания хочет привлечь инвестора, но боится потерять контроль.",
+        options: [
+          "Продать всё — деньги важнее",
+          "Структурировать сделку через допэмиссию или залог доли",
+          "Подделать документы — обойдём инвестора"
+        ], correct: 1, reward: 150, penalty: 20, skill: "logic",
+        explain: "Структурирование сделки защищает контроль.",
+        law: "ГК РФ ст. 66.2 — вклады в имущество общества. Инвестиции оформляются через увеличение уставного капитала или иные законные механизмы." }
+    ]
+  }
+};
+
+// ==================== ПЕРЕМЕШИВАНИЕ ====================
+function shuffleCase(caseObj) {
+  const indices = [0, 1, 2];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  const newOptions = indices.map(i => caseObj.options[i]);
+  const newCorrect = indices.indexOf(caseObj.correct);
+  return { ...caseObj, options: newOptions, correct: newCorrect };
+}
+
+// ==================== СОСТОЯНИЕ ====================
+let state = {
+  name: "",
+  money: 0,
+  exp: 0,
+  level: 1,
+  skills: { logic: 1, rhetoric: 1, empathy: 1 },
+  gameLevel: 1,
+  caseIndex: 0,
+  casesDone: 0,
+  correctCount: 0,
+  levelMoney: 0,
+  levelCorrect: 0,
+  totalCorrect: 0,
+  answered: false,
+  selectedSpec: null,
+  levelSpecs: [],
+  currentCase: null
+};
+
+const CASES_PER_LEVEL = 10;
+const EXP_PER_LEVEL = 300;
+
+// ==================== DOM ====================
+const screens = {
+  start: document.getElementById('screen-start'),
+  game: document.getElementById('screen-game'),
+  levelDone: document.getElementById('screen-level-done'),
+  results: document.getElementById('screen-results')
+};
+
+const specCards = document.querySelectorAll('.spec-card');
+const btnStart = document.getElementById('btn-start');
+const nameInput = document.getElementById('lawyer-name');
+const btnNext = document.getElementById('btn-next');
+const btnRestart = document.getElementById('btn-restart');
+const btnNextLevel = document.getElementById('btn-next-level');
+const levelDots = document.querySelectorAll('.level-dot');
+
+// ==================== ОБНОВЛЕНИЕ КАРТОЧКИ ЮРИСТА ====================
+function updateLawyerCard(prefix) {
+  // prefix: 'game' | 'done' | 'final'
+  if (prefix === 'game') {
+    document.getElementById('game-lawyer-name').textContent = state.name || "Адвокат";
+    document.getElementById('game-lawyer-level').textContent = `Ур. ${state.level}`;
+    const spec = state.levelSpecs[state.gameLevel];
+    if (spec) {
+      const specEl = document.getElementById('game-lawyer-spec');
+      specEl.textContent = SPECIALIZATIONS[spec].name;
+      specEl.style.background = SPECIALIZATIONS[spec].color;
+    }
+  } else if (prefix === 'done') {
+    document.getElementById('done-lawyer-name').textContent = state.name || "Адвокат";
+    document.getElementById('done-lawyer-level').textContent = `Ур. ${state.level}`;
+    const spec = state.levelSpecs[state.gameLevel];
+    if (spec) {
+      const specEl = document.getElementById('done-lawyer-spec');
+      specEl.textContent = SPECIALIZATIONS[spec].name;
+      specEl.style.background = SPECIALIZATIONS[spec].color;
+    }
+  } else if (prefix === 'final') {
+    document.getElementById('final-lawyer-name').textContent = state.name || "Адвокат";
+    document.getElementById('final-lawyer-level').textContent = `Ур. ${state.level}`;
+    const specs = state.levelSpecs.slice(1).map(s => SPECIALIZATIONS[s].name).join(" · ");
+    document.getElementById('final-lawyer-specs').textContent = specs || "—";
+  }
+}
+
+// ==================== ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ====================
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateLevelDots() {
+  levelDots.forEach(dot => {
+    const lvl = parseInt(dot.dataset.level);
+    dot.classList.remove('active', 'done');
+    if (lvl < state.gameLevel) dot.classList.add('done');
+    else if (lvl === state.gameLevel) dot.classList.add('active');
+  });
+}
+
+specCards.forEach(card => {
+  card.addEventListener('click', () => {
+    specCards.forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.selectedSpec = card.dataset.spec;
+    btnStart.disabled = false;
+  });
+});
+
+function startLevel() {
+  const spec = state.selectedSpec;
+  const bonus = SPECIALIZATIONS[spec].bonus;
+
+  state.caseIndex = 0;
+  state.casesDone = 0;
+  state.levelCorrect = 0;
+  state.levelMoney = 0;
+  state.answered = false;
+
+  state.skills.logic += bonus.logic;
+  state.skills.rhetoric += bonus.rhetoric;
+  state.skills.empathy += bonus.empathy;
+
+  state.levelSpecs[state.gameLevel] = spec;
+
+  document.getElementById('current-spec-badge').textContent =
+    SPECIALIZATIONS[spec].name;
+  document.getElementById('current-spec-badge').style.background =
+    SPECIALIZATIONS[spec].color;
+
+  updateHUD();
+  updateLevelDots();
+  updateLawyerCard('game');
+  showScreen('game');
+  renderCase();
+}
+
+btnStart.addEventListener('click', () => {
+  if (state.gameLevel === 1) {
+    state.name = nameInput.value.trim() || "Адвокат";
+    state.money = 0;
+    state.exp = 0;
+    state.level = 1;
+    state.skills = { logic: 1, rhetoric: 1, empathy: 1 };
+    state.totalCorrect = 0;
+    state.levelSpecs = [];
+  }
+  startLevel();
+});
+
+function updateHUD() {
+  document.getElementById('hud-money').textContent = state.money.toLocaleString('ru-RU') + ' ₽';
+  document.getElementById('hud-exp').textContent = state.exp;
+  document.getElementById('hud-level').textContent = state.level;
+  document.getElementById('hud-case').textContent =
+    `${Math.min(state.casesDone + 1, CASES_PER_LEVEL)} / ${CASES_PER_LEVEL}`;
+  document.getElementById('skill-logic').textContent = state.skills.logic;
+  document.getElementById('skill-rhetoric').textContent = state.skills.rhetoric;
+  document.getElementById('skill-empathy').textContent = state.skills.empathy;
+
+  const pct = (state.casesDone / CASES_PER_LEVEL) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function renderCase() {
+  const spec = state.levelSpecs[state.gameLevel];
+  const rawCase = CASES[state.gameLevel][spec][state.caseIndex];
+  state.currentCase = shuffleCase(rawCase);
+  const c = state.currentCase;
+
+  document.getElementById('case-number').textContent =
+    `Уровень ${state.gameLevel} · Дело №${state.caseIndex + 1} из ${CASES_PER_LEVEL}`;
+  document.getElementById('case-text').textContent = c.text;
+
+  const optsEl = document.getElementById('case-options');
+  optsEl.innerHTML = '';
+
+  c.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => answerCase(i));
+    optsEl.appendChild(btn);
+  });
+
+  document.getElementById('result-box').className = 'result-box';
+  btnNext.style.display = 'none';
+  state.answered = false;
+}
+
+function answerCase(selected) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const c = state.currentCase;
+  const opts = document.querySelectorAll('.option');
+  const isCorrect = selected === c.correct;
+
+  opts.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === c.correct) btn.classList.add('correct');
+    if (i === selected && !isCorrect) btn.classList.add('wrong');
+  });
+
+  const resultBox = document.getElementById('result-box');
+  const resultTitle = document.getElementById('result-title');
+  const resultExplain = document.getElementById('result-explain');
+  const lawRef = document.getElementById('law-ref');
+
+  if (isCorrect) {
+    state.money += c.reward;
+    state.levelMoney += c.reward;
+    state.exp += 50 + Math.round(c.reward / 10);
+    state.skills[c.skill] += 1;
+    state.correctCount++;
+    state.levelCorrect++;
+    state.totalCorrect++;
+
+    resultBox.className = 'result-box show success';
+    resultTitle.textContent = `✅ Верно! +${c.reward} ₽ · +${50 + Math.round(c.reward / 10)} опыта`;
+  } else {
+    if (c.penalty > 0) {
+      state.money = Math.max(0, state.money - c.penalty);
+      resultTitle.textContent = `❌ Неверно. -${c.penalty} ₽`;
+    } else {
+      resultTitle.textContent = `❌ Неверно. Гонорар не начислен.`;
+    }
+    resultBox.className = 'result-box show fail';
+  }
+
+  resultExplain.textContent = c.explain;
+  lawRef.innerHTML = `<strong>📖 Правовая основа:</strong> ${c.law}`;
+
+  checkLevelUp();
+  state.casesDone++;
+  updateHUD();
+  updateLawyerCard('game');
+
+  btnNext.style.display = 'block';
+  btnNext.textContent = (state.caseIndex < CASES_PER_LEVEL - 1)
+    ? 'Следующее дело →'
+    : 'Завершить уровень →';
+}
+
+function checkLevelUp() {
+  while (state.exp >= EXP_PER_LEVEL * state.level) {
+    state.level++;
+    const skills = ['logic', 'rhetoric', 'empathy'];
+    const randomSkill = skills[Math.floor(Math.random() * skills.length)];
+    state.skills[randomSkill]++;
+    showToast(`🎉 Уровень ${state.level}! Навык «${randomSkill}» +1`);
+  }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #b8956a; color: white; padding: 12px 24px; border-radius: 12px;
+    font-family: Georgia, serif; z-index: 1000; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s;
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+btnNext.addEventListener('click', () => {
+  state.caseIndex++;
+  if (state.caseIndex >= CASES_PER_LEVEL) {
+    showLevelDone();
+  } else {
+    renderCase();
+  }
+});
+
+function showLevelDone() {
+  document.getElementById('level-title').textContent =
+    `Уровень ${state.gameLevel} завершён!`;
+  const spec = state.levelSpecs[state.gameLevel];
+  document.getElementById('level-subtitle').textContent =
+    `Специализация: ${SPECIALIZATIONS[spec].name}`;
+  document.getElementById('level-money').textContent =
+    state.levelMoney.toLocaleString('ru-RU') + ' ₽';
+  document.getElementById('level-correct').textContent =
+    `${state.levelCorrect} / ${CASES_PER_LEVEL}`;
+  document.getElementById('level-exp').textContent = state.exp;
+
+  const ratio = state.levelCorrect / CASES_PER_LEVEL;
+  let medal;
+  if (ratio === 1) medal = "🏆";
+  else if (ratio >= 0.7) medal = "🥇";
+  else if (ratio >= 0.5) medal = "🥈";
+  else medal = "🥉";
+  document.getElementById('level-medal').textContent = medal;
+
+  btnNextLevel.textContent = (state.gameLevel < 3)
+    ? `Перейти на уровень ${state.gameLevel + 1} →`
+    : 'Посмотреть итоги практики 🏆';
+  btnNextLevel.style.display = 'block';
+
+  updateLawyerCard('done');
+  showScreen('levelDone');
+}
+
+btnNextLevel.addEventListener('click', () => {
+  if (state.gameLevel < 3) {
+    state.gameLevel++;
+    specCards.forEach(c => c.classList.remove('selected'));
+    state.selectedSpec = null;
+    btnStart.disabled = true;
+    nameInput.value = state.name;
+    document.getElementById('name-group').style.display = 'none';
+    document.getElementById('level-banner').innerHTML =
+      `<div style="font-size:20px; font-weight:bold; color:#b8956a;">Уровень ${state.gameLevel}</div>
+       <div style="font-size:14px; color:#8a7a68;">Выберите новую специализацию</div>`;
+    showScreen('start');
+  } else {
+    showFinalResults();
+  }
+});
+
+function showFinalResults() {
+  document.getElementById('result-total').textContent =
+    state.money.toLocaleString('ru-RU') + ' ₽';
+  document.getElementById('result-exp').textContent = state.exp;
+  document.getElementById('result-correct').textContent = `${state.totalCorrect} / 30`;
+  document.getElementById('result-level').textContent = state.level;
+
+  const ratio = state.totalCorrect / 30;
+  let medal, msg;
+  if (ratio === 1) { medal = "🏆"; msg = "Идеальная практика! Вы — легенда юриспруденции."; }
+  else if (ratio >= 0.8) { medal = "🥇"; msg = "Блестящий результат! Клиенты выстраиваются в очередь."; }
+  else if (ratio >= 0.6) { medal = "🥈"; msg = "Хорошая практика. Есть куда расти."; }
+  else { medal = "🥉"; msg = "Практика была непростой. Опыт приходит с делами."; }
+
+  document.getElementById('result-medal').textContent = medal;
+  document.getElementById('result-message').textContent = msg;
+
+  updateLawyerCard('final');
+  showScreen('results');
+}
+
+btnRestart.addEventListener('click', () => {
+  state = {
+    name: "", money: 0, exp: 0, level: 1,
+    skills: { logic: 1, rhetoric: 1, empathy: 1 },
+    gameLevel: 1, caseIndex: 0, casesDone: 0,
+    correctCount: 0, levelMoney: 0, levelCorrect: 0,
+    totalCorrect: 0, answered: false, selectedSpec: null,
+    levelSpecs: [], currentCase: null
+  };
+  specCards.forEach(c => c.classList.remove('selected'));
+  btnStart.disabled = true;
+  nameInput.value = "";
+  document.getElementById('name-group').style.display = 'block';
+  document.getElementById('level-banner').innerHTML = '';
+  showScreen('start');
+});
+</script>
+</body>
+</html>
